@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+# Description:
+#   Install the software development tools required to develop this project.
+
+set -euo pipefail
+
+function set_up_macos() {
+    command -v brew >/dev/null 2>&1 || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    command -v act >/dev/null 2>&1 || brew install act
+    command -v gitleaks >/dev/null 2>&1 || brew install gitleaks
+    command -v just >/dev/null 2>&1 || brew install just
+    command -v prek >/dev/null 2>&1 || brew install prek
+    command -v shellcheck >/dev/null 2>&1 || brew install shellcheck
+}
+
+function set_up_linux() {
+    command -v act >/dev/null 2>&1 || { curl -fsSL https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash -s -- -b /usr/local/bin; }
+    command -v just >/dev/null 2>&1 || sudo apt-get install -y just
+    command -v prek >/dev/null 2>&1 || pip install prek
+    command -v shellcheck >/dev/null 2>&1 || sudo apt-get install -y shellcheck
+}
+
+function set_up() {
+    case "$(uname -s)" in
+        Darwin)
+            set_up_macos
+            ;;
+        Linux)
+            set_up_linux
+            ;;
+        *)
+            printf 'Unsupported operating system: %s\n' "$(uname -s)" >&2
+            return 1
+            ;;
+    esac
+}
+
+function main() {
+    set_up
+    prek gc
+    prek install
+    prek install --hook-type commit-msg
+    prek install --hook-type pre-push
+    prek run --all-files
+}
+
+main
