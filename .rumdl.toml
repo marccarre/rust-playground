@@ -1,0 +1,20 @@
+# Configuration file for `rumdl`, a Markdown linter written in Rust.
+# See https://github.com/rvben/rumdl for more information.
+#:schema https://www.schemastore.org/rumdl.json
+
+[MD013] # line-length
+line-length = 80  # Line length
+code-blocks = false  # Exclude code blocks from line length check
+tables = false  # Exclude tables from line length check
+headings = true  # Include headings in line length check
+reflow = true
+
+[MD024] # no-duplicate-heading
+# Allow duplicate headings if they're under different parent sections.
+siblings-only = true
+
+# Global configuration options
+[global]
+include = [
+    "**/*.md",
+]
