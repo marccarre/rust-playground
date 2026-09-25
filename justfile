@@ -13,5 +13,8 @@ lint:
 test:
     cargo nextest run --workspace
 
+bench:
+    cargo bench
+
 ci:
     act pull_request --job check_all
