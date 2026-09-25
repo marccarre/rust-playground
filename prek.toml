@@ -1,0 +1,174 @@
+# Configuration file for `prek`, a git hook framework written in Rust.
+# See https://prek.j178.dev for more information.
+#:schema https://www.schemastore.org/prek.json
+
+# Restrict hooks to the stages that pass files we own. Without this, hooks also run
+# at the `commit-msg` stage against `COMMIT_EDITMSG`, which lives outside the working
+# tree in a git worktree and so trips the filename checks.
+default_stages = [
+  "pre-commit",
+  "pre-push"
+]
+
+[[repos]]
+repo = "builtin"
+hooks = [
+  {
+    id = "check-added-large-files",
+    args = ["--maxkb=400"]
+  },
+  { id = "check-case-conflict" },
+  { id = "check-executables-have-shebangs" },
+  {
+    # Only at pre-commit: at commit-msg this hook sees COMMIT_EDITMSG, whose
+    # path from a worktree starts with "..", which it rejects as a trailing dot.
+    id = "check-illegal-windows-names",
+    stages = ["pre-commit"]
+  },
+  { id = "check-json" },
+  { id = "check-json5" },
+  { id = "check-merge-conflict" },
+  { id = "check-shebang-scripts-are-executable" },
+  { id = "check-symlinks" },
+  { id = "check-toml" },
+  { id = "check-vcs-permalinks" },
+  { id = "check-xml" },
+  { id = "check-yaml" },
+  { id = "destroyed-symlinks" },
+  { id = "detect-private-key" },
+  { id = "end-of-file-fixer" },
+  { id = "file-contents-sorter" },
+  { id = "fix-byte-order-marker" },
+  { id = "mixed-line-ending" },
+  {
+    id = "pretty-format-json",
+    args = ["--autofix"]
+  },
+  { id = "trailing-whitespace" }
+]
+
+[[repos]]
+repo = "https://github.com/compilerla/conventional-pre-commit"
+rev = "v4.4.0"
+hooks = [
+  {
+    id = "conventional-pre-commit",
+    stages = ["commit-msg"]
+  }
+]
+
+[[repos]]
+repo = "https://github.com/gitleaks/gitleaks"
+rev = "v8.30.1"
+hooks = [
+  {
+    id = "gitleaks",
+    args = [
+      "--verbose",
+      "--redact",
+      "--staged"
+    ],
+    stages = ["pre-commit"]
+  }
+]
+
+[[repos]]
+repo = "https://github.com/crate-ci/typos"
+rev = "v1.50.2"
+hooks = [
+  { id = "typos" }
+]
+
+[[repos]]
+repo = "https://github.com/rvben/rumdl-pre-commit"
+rev = "v0.2.75"
+hooks = [
+  # Lint + auto-fix, fails if unfixable issues remain
+  {
+    id = "rumdl",
+    args = ["--fix"]
+  },
+  # Pure format, always exits 0
+  { id = "rumdl-fmt" }
+]
+
+[[repos]]
+repo = "https://github.com/google/yamlfmt"
+rev = "v0.21.0"
+hooks = [
+  { id = "yamlfmt" }
+]
+
+[[repos]]
+repo = "https://github.com/adrienverge/yamllint"
+rev = "v1.38.0"
+hooks = [
+  {
+    id = "yamllint",
+    args = [
+      "--format",
+      "parsable",
+      "--strict"
+    ]
+  }
+]
+
+[[repos]]
+repo = "https://github.com/rhysd/actionlint"
+rev = "v1.7.12"
+hooks = [
+  { id = "actionlint" }
+]
+
+[[repos]]
+repo = "https://github.com/shellcheck-py/shellcheck-py"
+rev = "v0.11.0.1-1"
+hooks = [
+  { id = "shellcheck" }
+]
+
+[[repos]]
+repo = "local"
+hooks = [
+  {
+    id = "cargo-fmt",
+    name = "cargo fmt",
+    entry = "cargo fmt --all -- --check",
+    language = "system",
+    types = ["rust"],
+    pass_filenames = false
+  },
+  {
+    id = "cargo-clippy",
+    name = "cargo clippy",
+    entry = "cargo clippy --workspace --all-targets -- -D warnings",
+    language = "system",
+    types = ["rust"],
+    pass_filenames = false
+  },
+  {
+    id = "cargo-check",
+    name = "cargo check",
+    entry = "cargo check --workspace --all-targets",
+    language = "system",
+    types = ["rust"],
+    pass_filenames = false
+  },
+  {
+    id = "cargo-deny-check",
+    name = "cargo deny check",
+    entry = "cargo deny check",
+    language = "system",
+    files = "^(Cargo\\.toml|Cargo\\.lock|deny\\.toml)$",
+    pass_filenames = false
+  },
+  {
+    id = "cargo-nextest",
+    name = "cargo nextest",
+    entry = "cargo nextest run --workspace",
+    language = "system",
+    types = ["rust"],
+    pass_filenames = false,
+    stages = ["pre-push"]
+  }
+]
