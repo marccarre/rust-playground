@@ -1,0 +1,54 @@
+name: ci_cd
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  check_all:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # `act` binds the local worktree through `.actrc`, so skip the remote checkout.
+      - name: Checkout Code
+        if: ${{ !env.ACT }}
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+      - name: Install cargo-deny and cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny,cargo-nextest
+      # prek downloads a managed environment per remote hook repo; cache them.
+      - name: Cache prek hook environments
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/prek
+          key: prek-${{ runner.os }}-${{ hashFiles('prek.toml') }}
+          restore-keys: prek-${{ runner.os }}-
+      - name: Run pre-commit
+        uses: j178/prek-action@v3.0.0
+        with:
+          extra-args: --all-files --skip=cargo-nextest
+      - name: Run cargo nextest
+        run: |
+          cargo nextest run --workspace
+  timeline_report:
+    name: Generate timeline report
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    needs:
+      - check_all
+    # The always() condition is required to have the timeline report generated
+    # regardless of the fact that the needed jobs status could be  "success",
+    # "failed", "skipped" or "cancelled"
+    if: always()
+    steps:
+      - uses: Kesin11/actions-timeline@v2
