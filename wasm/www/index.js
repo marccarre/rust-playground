@@ -2,6 +2,9 @@ import { Universe, __wasm as wasm } from "../pkg";
 const {
   attachCanvasInteractionHandlers,
 } = require("./canvas-interaction");
+const {
+  attachPlayPauseInteractionHandlers,
+} = require("./play-pause-interaction");
 
 const CELL_SIZE = 5; // px
 const GRID_COLOR = "#CCCCCC";
@@ -89,12 +92,18 @@ const pause = () => {
   animationId = null;
 };
 
-playPauseButton.addEventListener("click", (event) => {
+const togglePlayPause = () => {
   if (isPaused()) {
     play();
   } else {
     pause();
   }
+};
+
+attachPlayPauseInteractionHandlers({
+  button: playPauseButton,
+  keyboardTarget: document,
+  toggle: togglePlayPause,
 });
 
 attachCanvasInteractionHandlers({
