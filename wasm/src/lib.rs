@@ -77,6 +77,12 @@ impl Universe {
 
         self.cells = next;
     }
+
+    pub fn toggle_cell(&mut self, row: u32, column: u32) {
+        let idx = self.get_index(row, column);
+        let cell = self.cells[idx];
+        self.cells.set(idx, !cell);
+    }
 }
 
 impl Universe {
@@ -179,5 +185,36 @@ mod tests {
         assert!(universe.cells[1]);
         assert!(universe.cells[5]);
         assert_eq!(universe.cells.count_ones(..), 2);
+    }
+
+    #[test]
+    fn toggle_cell_makes_a_dead_cell_alive() {
+        // Given:
+        let mut universe = empty_universe(2, 2);
+        assert_eq!(universe.cells.count_ones(..), 0);
+
+        // When:
+        universe.toggle_cell(1, 1);
+
+        // Then:
+        assert!(universe.cells[3]);
+        assert_eq!(universe.cells.count_ones(..), 1);
+    }
+
+    #[test]
+    fn toggle_cell_makes_a_live_cell_dead() {
+        // Given:
+        let mut universe = empty_universe(2, 2);
+        assert_eq!(universe.cells.count_ones(..), 0);
+        universe.set_cells(&[(0, 1), (1, 1)]);
+        assert_eq!(universe.cells.count_ones(..), 2);
+
+        // When:
+        universe.toggle_cell(1, 1);
+
+        // Then:
+        assert!(universe.cells[1]);
+        assert!(!universe.cells[3]);
+        assert_eq!(universe.cells.count_ones(..), 1);
     }
 }
