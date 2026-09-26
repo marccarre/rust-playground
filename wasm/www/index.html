@@ -13,11 +13,19 @@
             align-items: center;
             justify-content: center;
         }
+
+        #game-controls {
+            display: flex;
+            gap: 0.25rem;
+        }
     </style>
 </head>
 
 <body>
-    <button id="btn-play-pause"></button>
+    <div id="game-controls">
+        <button id="btn-play-pause" type="button" aria-label="Play or pause"></button>
+        <button id="btn-step" type="button" aria-label="Advance one generation">⏭️</button>
+    </div>
     <canvas id="canvas-game-of-life"></canvas>
     <!-- No need for any <script> tag as HtmlWebpackPlugin injects index.js already. -->
 </body>

@@ -5,6 +5,7 @@ const {
 const {
   attachPlayPauseInteractionHandlers,
 } = require("./play-pause-interaction");
+const { createPlayback } = require("./playback");
 
 const CELL_SIZE = 5; // px
 const GRID_COLOR = "#CCCCCC";
@@ -73,37 +74,28 @@ const drawCells = () => {
   ctx.stroke();
 };
 
+const redraw = () => {
+  drawGrid();
+  drawCells();
+};
+
 const playPauseButton = document.getElementById("btn-play-pause");
+const stepButton = document.getElementById("btn-step");
 
-let animationId = null;
-
-const isPaused = () => {
-  return animationId === null;
-};
-
-const play = () => {
-  playPauseButton.textContent = "⏸";
-  renderLoop();
-};
-
-const pause = () => {
-  playPauseButton.textContent = "▶";
-  cancelAnimationFrame(animationId);
-  animationId = null;
-};
-
-const togglePlayPause = () => {
-  if (isPaused()) {
-    play();
-  } else {
-    pause();
-  }
-};
+const playback = createPlayback({
+  playPauseButton,
+  universe,
+  redraw,
+  requestFrame: requestAnimationFrame,
+  cancelFrame: cancelAnimationFrame,
+});
 
 attachPlayPauseInteractionHandlers({
   button: playPauseButton,
+  stepButton,
   keyboardTarget: window,
-  togglePlayPause,
+  step: playback.step,
+  togglePlayPause: playback.togglePlayPause,
 });
 
 attachCanvasInteractionHandlers({
@@ -112,19 +104,8 @@ attachCanvasInteractionHandlers({
   width,
   height,
   cellSize: CELL_SIZE,
-  redraw: () => {
-    drawGrid();
-    drawCells();
-  },
+  redraw,
 });
 
-const renderLoop = () => {
-  universe.tick();
-  drawGrid();
-  drawCells();
-  animationId = requestAnimationFrame(renderLoop);
-};
-
 playPauseButton.textContent = "▶";
-drawGrid();
-drawCells();
+redraw();

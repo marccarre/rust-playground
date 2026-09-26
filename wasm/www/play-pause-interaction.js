@@ -57,10 +57,13 @@ const isGlobalSpaceShortcut = (event) =>
 
 const attachPlayPauseInteractionHandlers = ({
   button,
+  stepButton,
   keyboardTarget,
+  step,
   togglePlayPause,
 }) => {
   button.addEventListener("click", togglePlayPause);
+  stepButton.addEventListener("click", step);
 
   keyboardTarget.addEventListener("keydown", (event) => {
     if (!isGlobalSpaceShortcut(event)) {

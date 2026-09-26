@@ -58,18 +58,30 @@ const createKeyboardEvent = (overrides = {}) => {
 
 const createHarness = () => {
   const button = createEventTarget();
+  const stepButton = createEventTarget();
   const keyboardTarget = createEventTarget();
   let toggles = 0;
+  let steps = 0;
 
   attachPlayPauseInteractionHandlers({
     button,
+    stepButton,
     keyboardTarget,
     togglePlayPause: () => {
       toggles += 1;
     },
+    step: () => {
+      steps += 1;
+    },
   });
 
-  return { button, keyboardTarget, toggles: () => toggles };
+  return {
+    button,
+    keyboardTarget,
+    stepButton,
+    steps: () => steps,
+    toggles: () => toggles,
+  };
 };
 
 describe("play/pause interactions", () => {
@@ -82,6 +94,17 @@ describe("play/pause interactions", () => {
 
     // Then:
     assert.equal(toggles(), 1);
+  });
+
+  it("steps one generation when the step button is clicked", () => {
+    // Given:
+    const { stepButton, steps } = createHarness();
+
+    // When:
+    stepButton.dispatch("click");
+
+    // Then:
+    assert.equal(steps(), 1);
   });
 
   it("toggles play/pause when Space is pressed", () => {
