@@ -8,4 +8,5 @@ license = "CC-BY-NC-4.0"
 crate-type = ["cdylib"]
 
 [dependencies]
+js-sys = "0.3.106"
 wasm-bindgen = "0.2.129"
