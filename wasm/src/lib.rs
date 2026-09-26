@@ -79,6 +79,9 @@ impl Universe {
     }
 
     pub fn toggle_cell(&mut self, row: u32, column: u32) {
+        if !self.contains(row, column) {
+            return;
+        }
         let idx = self.get_index(row, column);
         let cell = self.cells[idx];
         self.cells.set(idx, !cell);
@@ -89,15 +92,29 @@ impl Universe {
     // Rust-facing methods:
 
     /// Set the universe width and reset every cell to dead.
-    pub fn set_width(&mut self, width: u32) {
+    ///
+    /// Return `false` when the resulting cell count exceeds the supported size.
+    pub fn set_width(&mut self, width: u32) -> bool {
+        let Some(size) = Self::cell_count(width, self.height) else {
+            return false;
+        };
+
         self.width = width;
-        self.reset_cells();
+        self.cells = FixedBitSet::with_capacity(size);
+        true
     }
 
     /// Set the universe height and reset every cell to dead.
-    pub fn set_height(&mut self, height: u32) {
+    ///
+    /// Return `false` when the resulting cell count exceeds the supported size.
+    pub fn set_height(&mut self, height: u32) -> bool {
+        let Some(size) = Self::cell_count(self.width, height) else {
+            return false;
+        };
+
         self.height = height;
-        self.reset_cells();
+        self.cells = FixedBitSet::with_capacity(size);
+        true
     }
 
     /// Get the state of every cell in the universe.
@@ -108,17 +125,23 @@ impl Universe {
     /// Set the cells at the given coordinates to alive.
     pub fn set_cells(&mut self, cells: &[(u32, u32)]) {
         for &(row, col) in cells {
-            let idx = self.get_index(row, col);
-            self.cells.insert(idx);
+            if self.contains(row, col) {
+                let idx = self.get_index(row, col);
+                self.cells.insert(idx);
+            }
         }
+    }
+
+    fn cell_count(width: u32, height: u32) -> Option<usize> {
+        width.checked_mul(height).map(|size| size as usize)
+    }
+
+    fn contains(&self, row: u32, column: u32) -> bool {
+        row < self.height && column < self.width
     }
 
     fn get_index(&self, row: u32, column: u32) -> usize {
         (row * self.width + column) as usize
-    }
-
-    fn reset_cells(&mut self) {
-        self.cells = FixedBitSet::with_capacity((self.width * self.height) as usize);
     }
 
     fn live_neighbour_count(&self, row: u32, column: u32) -> u8 {
@@ -215,6 +238,65 @@ mod tests {
         // Then:
         assert!(universe.cells[1]);
         assert!(!universe.cells[3]);
+        assert_eq!(universe.cells.count_ones(..), 1);
+    }
+
+    #[test]
+    fn toggle_cell_ignores_coordinates_outside_the_universe() {
+        // Given:
+        let invalid_coordinates = [(2, 0), (0, 2), (u32::MAX, 0), (0, u32::MAX)];
+
+        // When:
+        let live_cell_counts = invalid_coordinates.map(|(row, column)| {
+            let mut universe = empty_universe(2, 2);
+            universe.toggle_cell(row, column);
+            universe.cells.count_ones(..)
+        });
+
+        // Then:
+        assert_eq!(live_cell_counts, [0; 4]);
+    }
+
+    #[test]
+    fn set_cells_ignores_coordinates_outside_the_universe() {
+        // Given:
+        let mut universe = empty_universe(2, 2);
+
+        // When:
+        universe.set_cells(&[(0, 1), (2, 0), (0, 2)]);
+
+        // Then:
+        assert_eq!(universe.cells.count_ones(..), 1);
+        assert!(universe.cells[1]);
+    }
+
+    #[test]
+    fn set_width_ignores_a_dimension_that_overflows_the_cell_count() {
+        // Given:
+        let mut universe = empty_universe(2, 2);
+        universe.set_cells(&[(0, 1)]);
+
+        // When:
+        let changed = universe.set_width(u32::MAX);
+
+        // Then:
+        assert!(!changed);
+        assert_eq!(universe.width, 2);
+        assert_eq!(universe.cells.count_ones(..), 1);
+    }
+
+    #[test]
+    fn set_height_ignores_a_dimension_that_overflows_the_cell_count() {
+        // Given:
+        let mut universe = empty_universe(2, 2);
+        universe.set_cells(&[(0, 1)]);
+
+        // When:
+        let changed = universe.set_height(u32::MAX);
+
+        // Then:
+        assert!(!changed);
+        assert_eq!(universe.height, 2);
         assert_eq!(universe.cells.count_ones(..), 1);
     }
 }
