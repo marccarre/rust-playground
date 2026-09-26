@@ -97,16 +97,8 @@ impl Universe {
             return;
         }
 
-        let rows = [
-            (row + self.height - 1) % self.height,
-            row,
-            (row + 1) % self.height,
-        ];
-        let columns = [
-            (column + self.width - 1) % self.width,
-            column,
-            (column + 1) % self.width,
-        ];
+        let rows = Self::centred_coordinates(row, self.height);
+        let columns = Self::centred_coordinates(column, self.width);
 
         for glider_row in rows {
             for glider_column in columns {
@@ -175,6 +167,14 @@ impl Universe {
 
     fn contains(&self, row: u32, column: u32) -> bool {
         row < self.height && column < self.width
+    }
+
+    fn centred_coordinates(target: u32, length: u32) -> [u32; 3] {
+        [
+            (target + length - 1) % length,
+            target,
+            (target + 1) % length,
+        ]
     }
 
     fn get_index(&self, row: u32, column: u32) -> usize {
