@@ -507,39 +507,30 @@ mod tests {
         universe.insert_pulsar(0, 0);
 
         // Then:
-        let expected_live_cells = [
-            (1, 2),
-            (1, 3),
-            (1, 4),
-            (1, 9),
-            (1, 10),
-            (1, 11),
-            (2, 1),
-            (2, 6),
-            (2, 7),
-            (2, 12),
-            (6, 2),
-            (6, 3),
-            (6, 4),
-            (6, 9),
-            (6, 10),
-            (6, 11),
-            (7, 2),
-            (7, 3),
-            (7, 4),
-            (7, 9),
-            (7, 10),
-            (7, 11),
-            (9, 1),
-            (9, 6),
-            (9, 7),
-            (9, 12),
+        let expected = [
+            ".............",
+            "..XXX....XXX.",
+            ".X....XX....X",
+            ".X....XX....X",
+            ".X....XX....X",
+            ".............",
+            "..XXX....XXX.",
+            "..XXX....XXX.",
+            ".............",
+            ".X....XX....X",
+            ".X....XX....X",
+            ".X....XX....X",
+            "..XXX....XXX.",
         ];
-        for (row, col) in expected_live_cells {
-            assert!(
-                universe.cells[universe.get_index(row, col)],
-                "cell ({row}, {col}) should be alive"
-            );
+        for (row, expected_row) in expected.iter().enumerate() {
+            for (col, expected_cell) in expected_row.bytes().enumerate() {
+                let idx = universe.get_index(row as u32, col as u32);
+                assert_eq!(
+                    universe.cells[idx],
+                    expected_cell == b'X',
+                    "unexpected cell at ({row}, {col})"
+                );
+            }
         }
         assert_eq!(universe.cells.count_ones(..), 48);
     }
