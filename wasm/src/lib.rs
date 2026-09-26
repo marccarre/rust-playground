@@ -14,6 +14,7 @@ pub struct Universe {
 
 #[wasm_bindgen]
 impl Universe {
+    // Javascript-facing methods:
     pub fn new() -> Universe {
         let width = 128;
         let height = 128;
@@ -76,7 +77,10 @@ impl Universe {
 
         self.cells = next;
     }
+}
 
+impl Universe {
+    // Rust-facing methods:
     fn get_index(&self, row: u32, column: u32) -> usize {
         (row * self.width + column) as usize
     }
