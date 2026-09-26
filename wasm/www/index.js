@@ -80,6 +80,7 @@ const redraw = () => {
 };
 
 const playPauseButton = document.getElementById("btn-play-pause");
+const resetButton = document.getElementById("btn-reset");
 const stepButton = document.getElementById("btn-step");
 
 const playback = createPlayback({
@@ -92,8 +93,10 @@ const playback = createPlayback({
 
 attachPlaybackInteractionHandlers({
   button: playPauseButton,
+  resetButton,
   stepButton,
   keyboardTarget: window,
+  reset: playback.reset,
   step: playback.step,
   togglePlayPause: playback.togglePlayPause,
 });

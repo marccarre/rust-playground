@@ -50,8 +50,13 @@ const createPlayback = ({
     tickAndRedraw();
   };
 
+  const reset = () => {
+    universe.randomize();
+    redraw();
+  };
+
   setButtonState("▶", "Play");
-  return { isPaused, step, togglePlayPause };
+  return { isPaused, reset, step, togglePlayPause };
 };
 
 module.exports = { createPlayback };

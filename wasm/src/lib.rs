@@ -24,16 +24,13 @@ impl Universe {
         let height = 128;
         let size = (width * height) as usize;
 
-        let mut cells = FixedBitSet::with_capacity(size);
-        for i in 0..size {
-            cells.set(i, js_sys::Math::random() < 0.5);
-        }
-
-        Universe {
+        let mut universe = Universe {
             width,
             height,
-            cells,
-        }
+            cells: FixedBitSet::with_capacity(size),
+        };
+        universe.randomize();
+        universe
     }
 
     pub fn width(&self) -> u32 {
@@ -80,6 +77,10 @@ impl Universe {
         }
 
         self.cells = next;
+    }
+
+    pub fn randomize(&mut self) {
+        self.randomize_with(|| js_sys::Math::random() < 0.5);
     }
 
     pub fn toggle_cell(&mut self, row: u32, col: u32) {
@@ -204,6 +205,12 @@ impl Universe {
 
     fn contains(&self, row: u32, col: u32) -> bool {
         row < self.height && col < self.width
+    }
+
+    fn randomize_with(&mut self, mut is_alive: impl FnMut() -> bool) {
+        for index in 0..self.cells.len() {
+            self.cells.set(index, is_alive());
+        }
     }
 
     fn insert_pattern<const SIZE: usize>(
@@ -334,6 +341,23 @@ mod tests {
         assert!(universe.cells[1]);
         assert!(!universe.cells[3]);
         assert_eq!(universe.cells.count_ones(..), 1);
+    }
+
+    #[test]
+    fn randomize_with_replaces_every_cell_from_the_random_source() {
+        // Given:
+        let mut universe = empty_universe(2, 2);
+        universe.set_cells(&[(0, 0), (0, 1), (1, 0), (1, 1)]);
+        let mut random_cells = [false, true, false, true].into_iter();
+
+        // When:
+        universe.randomize_with(|| random_cells.next().unwrap());
+
+        // Then:
+        assert_eq!(
+            universe.cells.as_slice(),
+            FixedBitSet::from_iter([1, 3]).as_slice()
+        );
     }
 
     #[test]

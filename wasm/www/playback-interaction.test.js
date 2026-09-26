@@ -58,13 +58,16 @@ const createKeyboardEvent = (overrides = {}) => {
 
 const createHarness = () => {
   const button = createEventTarget();
+  const resetButton = createEventTarget();
   const stepButton = createEventTarget();
   const keyboardTarget = createEventTarget();
   let toggles = 0;
   let steps = 0;
+  let resets = 0;
 
   attachPlaybackInteractionHandlers({
     button,
+    resetButton,
     stepButton,
     keyboardTarget,
     togglePlayPause: () => {
@@ -73,11 +76,16 @@ const createHarness = () => {
     step: () => {
       steps += 1;
     },
+    reset: () => {
+      resets += 1;
+    },
   });
 
   return {
     button,
     keyboardTarget,
+    resetButton,
+    resets: () => resets,
     stepButton,
     steps: () => steps,
     toggles: () => toggles,
@@ -105,6 +113,17 @@ describe("play/pause interactions", () => {
 
     // Then:
     assert.equal(steps(), 1);
+  });
+
+  it("resets the universe when the reset button is clicked", () => {
+    // Given:
+    const { resetButton, resets } = createHarness();
+
+    // When:
+    resetButton.dispatch("click");
+
+    // Then:
+    assert.equal(resets(), 1);
   });
 
   it("toggles play/pause when Space is pressed", () => {
