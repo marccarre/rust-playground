@@ -5,7 +5,9 @@ const { createPlayback } = require("./playback");
 
 const createHarness = () => {
   const attributes = new Map();
+  const fpsCounter = { textContent: "" };
   const tickCounter = { textContent: "" };
+  let currentTime = 0;
   const playPauseButton = {
     textContent: "",
     getAttribute(name) {
@@ -18,6 +20,7 @@ const createHarness = () => {
   const calls = { canceledFrames: [], events: [], requestedFrames: [] };
   const playback = createPlayback({
     playPauseButton,
+    fpsCounter,
     tickCounter,
     universe: {
       clear() {
@@ -40,12 +43,64 @@ const createHarness = () => {
     cancelFrame: (animationId) => {
       calls.canceledFrames.push(animationId);
     },
+    now: () => currentTime,
   });
 
-  return { calls, playback, playPauseButton, tickCounter };
+  return {
+    calls,
+    fpsCounter,
+    playback,
+    playPauseButton,
+    setTime: (time) => {
+      currentTime = time;
+    },
+    tickCounter,
+  };
+};
+
+const runScheduledFrames = (calls, setTime, timestamps) => {
+  for (const timestamp of timestamps) {
+    setTime(timestamp);
+    calls.requestedFrames.at(-1)(timestamp);
+  }
 };
 
 describe("playback", () => {
+  it("reports animation frames per second and returns to zero when paused", () => {
+    // Given:
+    const { calls, fpsCounter, playback, setTime } = createHarness();
+    const initialFps = fpsCounter.textContent;
+
+    // When:
+    playback.togglePlayPause();
+    runScheduledFrames(calls, setTime, [250, 500, 750, 1000]);
+    const playingFps = fpsCounter.textContent;
+    playback.togglePlayPause();
+
+    // Then:
+    assert.equal(initialFps, "0");
+    assert.equal(playingFps, "4");
+    assert.equal(fpsCounter.textContent, "0");
+  });
+
+  it("resets the frame rate for each new game", () => {
+    // Given:
+    const { calls, fpsCounter, playback, setTime } = createHarness();
+    playback.togglePlayPause();
+    runScheduledFrames(calls, setTime, [250, 500, 750, 1000]);
+    assert.equal(fpsCounter.textContent, "4");
+
+    // When:
+    playback.reset();
+    const resetFps = fpsCounter.textContent;
+    runScheduledFrames(calls, setTime, [1250, 1500, 1750, 2000, 2250]);
+    playback.clear();
+
+    // Then:
+    assert.equal(resetFps, "0");
+    assert.equal(fpsCounter.textContent, "0");
+  });
+
   it("counts ticks in the current game", () => {
     // Given:
     const { calls, playback, tickCounter } = createHarness();

@@ -84,14 +84,17 @@ const clearButton = document.getElementById("btn-clear");
 const resetButton = document.getElementById("btn-reset");
 const stepButton = document.getElementById("btn-step");
 const tickCounter = document.getElementById("tick-count");
+const fpsCounter = document.getElementById("fps-count");
 
 const playback = createPlayback({
   playPauseButton,
   tickCounter,
+  fpsCounter,
   universe,
   redraw,
   requestFrame: requestAnimationFrame,
   cancelFrame: cancelAnimationFrame,
+  now: () => performance.now(),
 });
 
 attachPlaybackInteractionHandlers({
