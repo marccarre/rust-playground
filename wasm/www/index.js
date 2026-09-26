@@ -107,5 +107,4 @@ attachCanvasInteractionHandlers({
   redraw,
 });
 
-playPauseButton.textContent = "▶";
 redraw();

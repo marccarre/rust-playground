@@ -4,7 +4,16 @@ const { describe, it } = require("node:test");
 const { createPlayback } = require("./playback");
 
 const createHarness = () => {
-  const playPauseButton = { textContent: "" };
+  const attributes = new Map();
+  const playPauseButton = {
+    textContent: "",
+    getAttribute(name) {
+      return attributes.get(name);
+    },
+    setAttribute(name, value) {
+      attributes.set(name, value);
+    },
+  };
   const calls = { canceledFrames: [], events: [], requestedFrames: [] };
   const playback = createPlayback({
     playPauseButton,
@@ -29,6 +38,38 @@ const createHarness = () => {
 };
 
 describe("playback", () => {
+  it("exposes each playback state through the button label", () => {
+    // Given:
+    const { playback, playPauseButton } = createHarness();
+    const initialState = [
+      playPauseButton.textContent,
+      playPauseButton.getAttribute("aria-label"),
+    ];
+
+    // When:
+    playback.togglePlayPause();
+    const playingState = [
+      playPauseButton.textContent,
+      playPauseButton.getAttribute("aria-label"),
+    ];
+    playback.togglePlayPause();
+    const pausedState = [
+      playPauseButton.textContent,
+      playPauseButton.getAttribute("aria-label"),
+    ];
+    playback.step();
+    const steppedState = [
+      playPauseButton.textContent,
+      playPauseButton.getAttribute("aria-label"),
+    ];
+
+    // Then:
+    assert.deepEqual(initialState, ["▶", "Play"]);
+    assert.deepEqual(playingState, ["⏸", "Pause"]);
+    assert.deepEqual(pausedState, ["▶", "Play"]);
+    assert.deepEqual(steppedState, ["▶", "Play"]);
+  });
+
   it("advances one generation and remains paused when stepping from pause", () => {
     // Given:
     const { calls, playback, playPauseButton } = createHarness();

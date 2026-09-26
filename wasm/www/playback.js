@@ -9,6 +9,11 @@ const createPlayback = ({
 
   const isPaused = () => animationId === null;
 
+  const setButtonState = (icon, label) => {
+    playPauseButton.textContent = icon;
+    playPauseButton.setAttribute("aria-label", label);
+  };
+
   const tickAndRedraw = () => {
     universe.tick();
     redraw();
@@ -20,12 +25,12 @@ const createPlayback = ({
   };
 
   const play = () => {
-    playPauseButton.textContent = "⏸";
+    setButtonState("⏸", "Pause");
     renderLoop();
   };
 
   const pause = () => {
-    playPauseButton.textContent = "▶";
+    setButtonState("▶", "Play");
     if (!isPaused()) {
       cancelFrame(animationId);
       animationId = null;
@@ -45,6 +50,7 @@ const createPlayback = ({
     tickAndRedraw();
   };
 
+  setButtonState("▶", "Play");
   return { isPaused, step, togglePlayPause };
 };
 
