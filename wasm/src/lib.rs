@@ -81,6 +81,20 @@ impl Universe {
 
 impl Universe {
     // Rust-facing methods:
+
+    /// Get the state of every cell in the universe.
+    pub fn get_cells(&self) -> &FixedBitSet {
+        &self.cells
+    }
+
+    /// Set the cells at the given coordinates to alive.
+    pub fn set_cells(&mut self, cells: &[(u32, u32)]) {
+        for &(row, col) in cells {
+            let idx = self.get_index(row, col);
+            self.cells.insert(idx);
+        }
+    }
+
     fn get_index(&self, row: u32, column: u32) -> usize {
         (row * self.width + column) as usize
     }
@@ -105,5 +119,49 @@ impl Universe {
 impl Default for Universe {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{FixedBitSet, Universe};
+
+    fn empty_universe(width: u32, height: u32) -> Universe {
+        Universe {
+            width,
+            height,
+            cells: FixedBitSet::with_capacity((width * height) as usize),
+        }
+    }
+
+    #[test]
+    fn get_cells_returns_every_cell_state() {
+        // Given:
+        let mut universe = empty_universe(2, 2);
+        universe.cells.insert(1);
+
+        // When:
+        let cells = universe.get_cells();
+
+        // Then:
+        assert_eq!(cells.len(), 4);
+        assert!(!cells[0]);
+        assert!(cells[1]);
+        assert!(!cells[2]);
+        assert!(!cells[3]);
+    }
+
+    #[test]
+    fn set_cells_makes_each_coordinate_alive() {
+        // Given:
+        let mut universe = empty_universe(3, 2);
+
+        // When:
+        universe.set_cells(&[(0, 1), (1, 2)]);
+
+        // Then:
+        assert!(universe.cells[1]);
+        assert!(universe.cells[5]);
+        assert_eq!(universe.cells.count_ones(..), 2);
     }
 }
