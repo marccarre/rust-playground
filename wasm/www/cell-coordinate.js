@@ -1,8 +1,6 @@
 const getCellCoordinate = (offset, length, cellSize) => {
-  return Math.max(
-    0,
-    Math.min(Math.floor(offset / (cellSize + 1)), length - 1),
-  );
+  const index = Math.floor(offset / (cellSize + 1));
+  return Math.max(0, Math.min(index, length - 1));
 };
 
 module.exports = { getCellCoordinate };
