@@ -151,10 +151,10 @@ describe("playback", () => {
     ];
 
     // Then:
-    assert.deepEqual(initialState, ["▶", "Play"]);
+    assert.deepEqual(initialState, ["▶️", "Play"]);
     assert.deepEqual(playingState, ["⏸", "Pause"]);
-    assert.deepEqual(pausedState, ["▶", "Play"]);
-    assert.deepEqual(steppedState, ["▶", "Play"]);
+    assert.deepEqual(pausedState, ["▶️", "Play"]);
+    assert.deepEqual(steppedState, ["▶️", "Play"]);
   });
 
   it("advances one generation and remains paused when stepping from pause", () => {
@@ -168,7 +168,7 @@ describe("playback", () => {
     assert.deepEqual(calls.events, ["tick", "redraw"]);
     assert.deepEqual(calls.canceledFrames, []);
     assert.equal(playback.isPaused(), true);
-    assert.equal(playPauseButton.textContent, "▶");
+    assert.equal(playPauseButton.textContent, "▶️");
   });
 
   it("pauses and advances exactly one generation when stepping during play", () => {
@@ -184,7 +184,7 @@ describe("playback", () => {
     assert.deepEqual(calls.events, ["tick", "redraw"]);
     assert.deepEqual(calls.canceledFrames, [1]);
     assert.equal(playback.isPaused(), true);
-    assert.equal(playPauseButton.textContent, "▶");
+    assert.equal(playPauseButton.textContent, "▶️");
   });
 
   it("replaces and redraws a paused universe without starting playback", () => {

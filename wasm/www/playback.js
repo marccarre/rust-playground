@@ -62,7 +62,7 @@ const createPlayback = ({
   };
 
   const pause = () => {
-    setButtonState("▶", "Play");
+    setButtonState("▶️", "Play");
     fpsCounter.textContent = "0";
     if (!isPaused()) {
       cancelFrame(animationId);
@@ -103,7 +103,7 @@ const createPlayback = ({
     redraw();
   };
 
-  setButtonState("▶", "Play");
+  setButtonState("▶️", "Play");
   updateTickCounter();
   fpsCounter.textContent = "0";
   return { clear, isPaused, reset, step, togglePlayPause };
