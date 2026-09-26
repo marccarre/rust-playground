@@ -3,8 +3,8 @@ const {
   attachCanvasInteractionHandlers,
 } = require("./canvas-interaction");
 const {
-  attachPlayPauseInteractionHandlers,
-} = require("./play-pause-interaction");
+  attachPlaybackInteractionHandlers,
+} = require("./playback-interaction");
 const { createPlayback } = require("./playback");
 
 const CELL_SIZE = 5; // px
@@ -90,7 +90,7 @@ const playback = createPlayback({
   cancelFrame: cancelAnimationFrame,
 });
 
-attachPlayPauseInteractionHandlers({
+attachPlaybackInteractionHandlers({
   button: playPauseButton,
   stepButton,
   keyboardTarget: window,

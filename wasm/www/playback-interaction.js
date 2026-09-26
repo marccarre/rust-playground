@@ -55,7 +55,7 @@ const isGlobalSpaceShortcut = (event) =>
   !event.shiftKey &&
   !isInteractiveTarget(event.target);
 
-const attachPlayPauseInteractionHandlers = ({
+const attachPlaybackInteractionHandlers = ({
   button,
   stepButton,
   keyboardTarget,
@@ -77,4 +77,4 @@ const attachPlayPauseInteractionHandlers = ({
   });
 };
 
-module.exports = { attachPlayPauseInteractionHandlers };
+module.exports = { attachPlaybackInteractionHandlers };

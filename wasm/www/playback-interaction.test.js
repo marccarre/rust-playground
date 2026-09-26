@@ -2,8 +2,8 @@ const assert = require("node:assert/strict");
 const { describe, it } = require("node:test");
 
 const {
-  attachPlayPauseInteractionHandlers,
-} = require("./play-pause-interaction");
+  attachPlaybackInteractionHandlers,
+} = require("./playback-interaction");
 
 const createEventTarget = () => {
   const listeners = new Map();
@@ -63,7 +63,7 @@ const createHarness = () => {
   let toggles = 0;
   let steps = 0;
 
-  attachPlayPauseInteractionHandlers({
+  attachPlaybackInteractionHandlers({
     button,
     stepButton,
     keyboardTarget,
