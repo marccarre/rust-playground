@@ -1,3 +1,33 @@
+const SPACE_DRIVEN_ARIA_ROLES = [
+  "button",
+  "checkbox",
+  "combobox",
+  "grid",
+  "gridcell",
+  "link",
+  "listbox",
+  "menu",
+  "menubar",
+  "menuitem",
+  "menuitemcheckbox",
+  "menuitemradio",
+  "option",
+  "radio",
+  "radiogroup",
+  "scrollbar",
+  "searchbox",
+  "separator",
+  "slider",
+  "spinbutton",
+  "switch",
+  "tab",
+  "tablist",
+  "textbox",
+  "tree",
+  "treegrid",
+  "treeitem",
+];
+
 const INTERACTIVE_ELEMENT_SELECTOR = [
   "a[href]",
   "audio[controls]",
@@ -8,7 +38,7 @@ const INTERACTIVE_ELEMENT_SELECTOR = [
   "textarea",
   "video[controls]",
   '[contenteditable]:not([contenteditable="false"])',
-  "[role]",
+  ...SPACE_DRIVEN_ARIA_ROLES.map((role) => `[role~="${role}"]`),
 ].join(", ");
 
 const isInteractiveTarget = (target) =>

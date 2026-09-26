@@ -19,7 +19,17 @@ const createEventTarget = () => {
 
 const createKeyboardTarget = (matchingSelector = null) => ({
   closest(selector) {
-    return matchingSelector !== null && selector.includes(matchingSelector)
+    if (matchingSelector === null) {
+      return null;
+    }
+    const selectors = selector.split(", ");
+    const isAriaRole = matchingSelector.startsWith("[role~=");
+    const isEditable =
+      matchingSelector === "[contenteditable]" &&
+      selectors.some((candidate) => candidate.startsWith("[contenteditable]"));
+    return selectors.includes(matchingSelector) ||
+      (isAriaRole && selectors.includes("[role]")) ||
+      isEditable
       ? this
       : null;
   },
@@ -137,12 +147,12 @@ describe("play/pause interactions", () => {
       ["checkbox", "input"],
       ["other button", "button"],
       ["editable content", "[contenteditable]"],
-      ["ARIA tab", "[role]"],
-      ["ARIA menu item", "[role]"],
-      ["ARIA menu checkbox", "[role]"],
-      ["ARIA menu radio", "[role]"],
-      ["ARIA option", "[role]"],
-      ["ARIA tree item", "[role]"],
+      ["ARIA tab", '[role~="tab"]'],
+      ["ARIA menu item", '[role~="menuitem"]'],
+      ["ARIA menu checkbox", '[role~="menuitemcheckbox"]'],
+      ["ARIA menu radio", '[role~="menuitemradio"]'],
+      ["ARIA option", '[role~="option"]'],
+      ["ARIA tree item", '[role~="treeitem"]'],
     ];
     const events = scenarios.map(([, selector]) =>
       createKeyboardEvent({ target: createKeyboardTarget(selector) }),
@@ -162,6 +172,21 @@ describe("play/pause interactions", () => {
       );
     }
     assert.equal(toggles(), 0);
+  });
+
+  it("toggles play/pause from a non-interactive ARIA region", () => {
+    // Given:
+    const { keyboardTarget, toggles } = createHarness();
+    const event = createKeyboardEvent({
+      target: createKeyboardTarget('[role~="region"]'),
+    });
+
+    // When:
+    keyboardTarget.dispatch("keydown", event);
+
+    // Then:
+    assert.equal(event.defaultPrevented, true);
+    assert.equal(toggles(), 1);
   });
 
   it("ignores a Space event handled by another component", () => {
