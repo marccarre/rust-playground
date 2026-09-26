@@ -82,34 +82,31 @@ impl Universe {
         self.cells = next;
     }
 
-    pub fn toggle_cell(&mut self, row: u32, column: u32) {
-        if !self.contains(row, column) {
-            log!("[{}, {}] is outside of the universe", row, column);
+    pub fn toggle_cell(&mut self, row: u32, col: u32) {
+        if !self.contains(row, col) {
+            log!("[{}, {}] is outside of the universe", row, col);
             return;
         }
-        let idx = self.get_index(row, column);
+        let idx = self.get_index(row, col);
         let cell = self.cells[idx];
         self.cells.set(idx, !cell);
     }
 
-    pub fn insert_glider(&mut self, row: u32, column: u32) {
-        if !self.contains(row, column) || self.width < 3 || self.height < 3 {
+    pub fn insert_glider(&mut self, row: u32, col: u32) {
+        if !self.contains(row, col) || self.width < 3 || self.height < 3 {
             return;
         }
-
         let rows = Self::centred_coordinates(row, self.height);
-        let columns = Self::centred_coordinates(column, self.width);
-
+        let cols = Self::centred_coordinates(col, self.width);
         for glider_row in rows {
-            for glider_column in columns {
-                let idx = self.get_index(glider_row, glider_column);
+            for glider_col in cols {
+                let idx = self.get_index(glider_row, glider_col);
                 self.cells.set(idx, false);
             }
         }
-
         const LIVE_CELLS: [(usize, usize); 5] = [(0, 1), (1, 2), (2, 0), (2, 1), (2, 2)];
-        for (row_index, column_index) in LIVE_CELLS {
-            let idx = self.get_index(rows[row_index], columns[column_index]);
+        for (row_index, col_index) in LIVE_CELLS {
+            let idx = self.get_index(rows[row_index], cols[col_index]);
             self.cells.set(idx, true);
         }
     }
@@ -165,8 +162,8 @@ impl Universe {
         width.checked_mul(height).map(|size| size as usize)
     }
 
-    fn contains(&self, row: u32, column: u32) -> bool {
-        row < self.height && column < self.width
+    fn contains(&self, row: u32, col: u32) -> bool {
+        row < self.height && col < self.width
     }
 
     fn centred_coordinates(target: u32, length: u32) -> [u32; 3] {
@@ -177,11 +174,11 @@ impl Universe {
         ]
     }
 
-    fn get_index(&self, row: u32, column: u32) -> usize {
-        (row * self.width + column) as usize
+    fn get_index(&self, row: u32, col: u32) -> usize {
+        (row * self.width + col) as usize
     }
 
-    fn live_neighbour_count(&self, row: u32, column: u32) -> u8 {
+    fn live_neighbour_count(&self, row: u32, col: u32) -> u8 {
         let mut count = 0;
         for delta_row in [self.height - 1, 0, 1].iter().copied() {
             for delta_col in [self.width - 1, 0, 1].iter().copied() {
@@ -189,7 +186,7 @@ impl Universe {
                     continue;
                 }
                 let neighbour_row = (row + delta_row) % self.height;
-                let neighbour_col = (column + delta_col) % self.width;
+                let neighbour_col = (col + delta_col) % self.width;
                 let idx = self.get_index(neighbour_row, neighbour_col);
                 count += self.cells[idx] as u8;
             }
@@ -328,9 +325,9 @@ mod tests {
         ];
 
         // When:
-        let states = scenarios.map(|((row, column), expected_live_cells)| {
+        let states = scenarios.map(|((row, col), expected_live_cells)| {
             let mut universe = empty_universe(5, 5);
-            universe.insert_glider(row, column);
+            universe.insert_glider(row, col);
             (universe.cells, expected_live_cells)
         });
 
@@ -384,10 +381,10 @@ mod tests {
         let invalid_coordinates = [(5, 0), (0, 5), (u32::MAX, 0), (0, u32::MAX)];
 
         // When:
-        let states = invalid_coordinates.map(|(row, column)| {
+        let states = invalid_coordinates.map(|(row, col)| {
             let mut universe = empty_universe(5, 5);
             universe.set_cells(&[(0, 0)]);
-            universe.insert_glider(row, column);
+            universe.insert_glider(row, col);
             universe.cells
         });
 
@@ -404,9 +401,9 @@ mod tests {
         let invalid_coordinates = [(2, 0), (0, 2), (u32::MAX, 0), (0, u32::MAX)];
 
         // When:
-        let live_cell_counts = invalid_coordinates.map(|(row, column)| {
+        let live_cell_counts = invalid_coordinates.map(|(row, col)| {
             let mut universe = empty_universe(2, 2);
-            universe.toggle_cell(row, column);
+            universe.toggle_cell(row, col);
             universe.cells.count_ones(..)
         });
 
