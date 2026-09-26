@@ -91,6 +91,36 @@ impl Universe {
         let cell = self.cells[idx];
         self.cells.set(idx, !cell);
     }
+
+    pub fn insert_glider(&mut self, row: u32, column: u32) {
+        if !self.contains(row, column) || self.width < 3 || self.height < 3 {
+            return;
+        }
+
+        let rows = [
+            (row + self.height - 1) % self.height,
+            row,
+            (row + 1) % self.height,
+        ];
+        let columns = [
+            (column + self.width - 1) % self.width,
+            column,
+            (column + 1) % self.width,
+        ];
+
+        for glider_row in rows {
+            for glider_column in columns {
+                let idx = self.get_index(glider_row, glider_column);
+                self.cells.set(idx, false);
+            }
+        }
+
+        const LIVE_CELLS: [(usize, usize); 5] = [(0, 1), (1, 2), (2, 0), (2, 1), (2, 2)];
+        for (row_index, column_index) in LIVE_CELLS {
+            let idx = self.get_index(rows[row_index], columns[column_index]);
+            self.cells.set(idx, true);
+        }
+    }
 }
 
 impl Universe {
@@ -246,6 +276,126 @@ mod tests {
         assert!(universe.cells[1]);
         assert!(!universe.cells[3]);
         assert_eq!(universe.cells.count_ones(..), 1);
+    }
+
+    #[test]
+    fn insert_glider_centres_an_exact_glider_on_the_target_cell() {
+        // Given:
+        let mut universe = empty_universe(5, 5);
+        universe.set_cells(&[
+            (1, 1),
+            (1, 2),
+            (1, 3),
+            (2, 1),
+            (2, 2),
+            (2, 3),
+            (3, 1),
+            (3, 2),
+            (3, 3),
+        ]);
+
+        // When:
+        universe.insert_glider(2, 2);
+
+        // Then:
+        let expected = [false, true, false, false, false, true, true, true, true];
+        let actual = [
+            universe.cells[6],
+            universe.cells[7],
+            universe.cells[8],
+            universe.cells[11],
+            universe.cells[12],
+            universe.cells[13],
+            universe.cells[16],
+            universe.cells[17],
+            universe.cells[18],
+        ];
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn insert_glider_wraps_around_the_universe_at_edges_and_corners() {
+        // Given:
+        let scenarios = [
+            ((0, 0), [1, 5, 6, 9, 20]),
+            ((0, 2), [3, 6, 7, 8, 22]),
+            ((0, 4), [0, 5, 8, 9, 24]),
+            ((2, 0), [5, 11, 15, 16, 19]),
+            ((2, 4), [9, 10, 15, 18, 19]),
+            ((4, 0), [0, 1, 4, 15, 21]),
+            ((4, 2), [1, 2, 3, 17, 23]),
+            ((4, 4), [0, 3, 4, 19, 20]),
+        ];
+
+        // When:
+        let states = scenarios.map(|((row, column), expected_live_cells)| {
+            let mut universe = empty_universe(5, 5);
+            universe.insert_glider(row, column);
+            (universe.cells, expected_live_cells)
+        });
+
+        // Then:
+        for (cells, expected_live_cells) in states {
+            assert_eq!(cells.count_ones(..), expected_live_cells.len());
+            for index in expected_live_cells {
+                assert!(cells[index], "cell {index} should be alive");
+            }
+        }
+    }
+
+    #[test]
+    fn insert_glider_preserves_cells_outside_its_three_by_three_footprint() {
+        // Given:
+        let mut universe = empty_universe(5, 5);
+        universe.set_cells(&[(0, 0), (4, 4)]);
+
+        // When:
+        universe.insert_glider(2, 2);
+
+        // Then:
+        assert!(universe.cells[0]);
+        assert!(universe.cells[24]);
+        assert_eq!(universe.cells.count_ones(..), 7);
+    }
+
+    #[test]
+    fn insert_glider_ignores_universes_smaller_than_three_cells_in_either_dimension() {
+        // Given:
+        let dimensions = [(0, 3), (3, 0), (1, 5), (5, 1), (2, 3), (3, 2)];
+
+        // When:
+        let states = dimensions.map(|(width, height)| {
+            let mut universe = empty_universe(width, height);
+            universe.set_cells(&[(0, 0)]);
+            let expected = universe.cells.clone();
+            universe.insert_glider(0, 0);
+            (universe.cells, expected)
+        });
+
+        // Then:
+        for (cells, expected) in states {
+            assert_eq!(cells, expected);
+        }
+    }
+
+    #[test]
+    fn insert_glider_ignores_coordinates_outside_the_universe() {
+        // Given:
+        let invalid_coordinates = [(5, 0), (0, 5), (u32::MAX, 0), (0, u32::MAX)];
+
+        // When:
+        let states = invalid_coordinates.map(|(row, column)| {
+            let mut universe = empty_universe(5, 5);
+            universe.set_cells(&[(0, 0)]);
+            universe.insert_glider(row, column);
+            universe.cells
+        });
+
+        // Then:
+        for cells in states {
+            assert_eq!(cells.count_ones(..), 1);
+            assert!(cells[0]);
+        }
     }
 
     #[test]

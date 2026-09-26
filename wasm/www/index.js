@@ -1,5 +1,7 @@
 import { Universe, __wasm as wasm } from "../pkg";
-const { getCellCoordinate } = require("./cell-coordinate");
+const {
+  attachCanvasInteractionHandlers,
+} = require("./canvas-interaction");
 
 const CELL_SIZE = 5; // px
 const GRID_COLOR = "#CCCCCC";
@@ -95,17 +97,16 @@ playPauseButton.addEventListener("click", (event) => {
   }
 });
 
-canvas.addEventListener("click", (event) => {
-  const boundingRect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / boundingRect.width;
-  const scaleY = canvas.height / boundingRect.height;
-  const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
-  const canvasTop = (event.clientY - boundingRect.top) * scaleY;
-  const row = getCellCoordinate(canvasTop, height, CELL_SIZE);
-  const col = getCellCoordinate(canvasLeft, width, CELL_SIZE);
-  universe.toggle_cell(row, col);
-  drawGrid();
-  drawCells();
+attachCanvasInteractionHandlers({
+  canvas,
+  universe,
+  width,
+  height,
+  cellSize: CELL_SIZE,
+  redraw: () => {
+    drawGrid();
+    drawCells();
+  },
 });
 
 const renderLoop = () => {
