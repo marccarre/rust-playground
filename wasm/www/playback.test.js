@@ -152,7 +152,7 @@ describe("playback", () => {
 
     // Then:
     assert.deepEqual(initialState, ["▶️", "Play"]);
-    assert.deepEqual(playingState, ["⏸", "Pause"]);
+    assert.deepEqual(playingState, ["⏸️", "Pause"]);
     assert.deepEqual(pausedState, ["▶️", "Play"]);
     assert.deepEqual(steppedState, ["▶️", "Play"]);
   });

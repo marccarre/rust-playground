@@ -56,7 +56,7 @@ const createPlayback = ({
   };
 
   const play = () => {
-    setButtonState("⏸", "Pause");
+    setButtonState("⏸️", "Pause");
     resetFpsMeasurement();
     renderLoop();
   };
