@@ -93,42 +93,11 @@ impl Universe {
     }
 
     pub fn insert_glider(&mut self, row: u32, col: u32) {
-        if !self.contains(row, col) || self.width < 3 || self.height < 3 {
-            return;
-        }
-        let rows = Self::centred_coordinates(row, self.height);
-        let cols = Self::centred_coordinates(col, self.width);
-        for glider_row in rows {
-            for glider_col in cols {
-                let idx = self.get_index(glider_row, glider_col);
-                self.cells.set(idx, false);
-            }
-        }
         const LIVE_CELLS: [(usize, usize); 5] = [(0, 1), (1, 2), (2, 0), (2, 1), (2, 2)];
-        for (row_index, col_index) in LIVE_CELLS {
-            let idx = self.get_index(rows[row_index], cols[col_index]);
-            self.cells.set(idx, true);
-        }
+        self.insert_pattern::<3>(row, col, &LIVE_CELLS);
     }
 
     pub fn insert_pulsar(&mut self, row: u32, col: u32) {
-        const SIZE: usize = 13;
-        if !self.contains(row, col) || self.width < SIZE as u32 || self.height < SIZE as u32 {
-            return;
-        }
-
-        let rows: [u32; SIZE] =
-            std::array::from_fn(|index| (row + self.height + index as u32 - 6) % self.height);
-        let cols: [u32; SIZE] =
-            std::array::from_fn(|index| (col + self.width + index as u32 - 6) % self.width);
-
-        for pulsar_row in rows {
-            for pulsar_col in cols {
-                let idx = self.get_index(pulsar_row, pulsar_col);
-                self.cells.set(idx, false);
-            }
-        }
-
         const LIVE_CELLS: [(usize, usize); 48] = [
             (0, 2),
             (0, 3),
@@ -179,10 +148,7 @@ impl Universe {
             (12, 9),
             (12, 10),
         ];
-        for (row_index, col_index) in LIVE_CELLS {
-            let idx = self.get_index(rows[row_index], cols[col_index]);
-            self.cells.set(idx, true);
-        }
+        self.insert_pattern::<13>(row, col, &LIVE_CELLS);
     }
 }
 
@@ -240,12 +206,33 @@ impl Universe {
         row < self.height && col < self.width
     }
 
-    fn centred_coordinates(target: u32, length: u32) -> [u32; 3] {
-        [
-            (target + length - 1) % length,
-            target,
-            (target + 1) % length,
-        ]
+    fn insert_pattern<const SIZE: usize>(
+        &mut self,
+        row: u32,
+        col: u32,
+        live_cells: &[(usize, usize)],
+    ) {
+        if !self.contains(row, col) || self.width < SIZE as u32 || self.height < SIZE as u32 {
+            return;
+        }
+
+        let rows = Self::centred_coordinates::<SIZE>(row, self.height);
+        let cols = Self::centred_coordinates::<SIZE>(col, self.width);
+        for pattern_row in rows {
+            for pattern_col in cols {
+                let idx = self.get_index(pattern_row, pattern_col);
+                self.cells.set(idx, false);
+            }
+        }
+        for &(row_index, col_index) in live_cells {
+            let idx = self.get_index(rows[row_index], cols[col_index]);
+            self.cells.set(idx, true);
+        }
+    }
+
+    fn centred_coordinates<const SIZE: usize>(target: u32, length: u32) -> [u32; SIZE] {
+        let radius = (SIZE / 2) as u32;
+        std::array::from_fn(|index| (target + length - radius + index as u32) % length)
     }
 
     fn get_index(&self, row: u32, col: u32) -> usize {
