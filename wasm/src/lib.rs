@@ -1,3 +1,6 @@
+#[macro_use]
+mod utils;
+
 use wasm_bindgen::prelude::*;
 
 extern crate js_sys;
@@ -16,6 +19,7 @@ pub struct Universe {
 impl Universe {
     // Javascript-facing methods:
     pub fn new() -> Universe {
+        console_error_panic_hook::set_once();
         let width = 128;
         let height = 128;
         let size = (width * height) as usize;
@@ -80,6 +84,7 @@ impl Universe {
 
     pub fn toggle_cell(&mut self, row: u32, column: u32) {
         if !self.contains(row, column) {
+            log!("[{}, {}] is outside of the universe", row, column);
             return;
         }
         let idx = self.get_index(row, column);
