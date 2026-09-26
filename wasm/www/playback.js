@@ -55,8 +55,13 @@ const createPlayback = ({
     redraw();
   };
 
+  const clear = () => {
+    universe.clear();
+    redraw();
+  };
+
   setButtonState("▶", "Play");
-  return { isPaused, reset, step, togglePlayPause };
+  return { clear, isPaused, reset, step, togglePlayPause };
 };
 
 module.exports = { createPlayback };

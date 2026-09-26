@@ -83,6 +83,10 @@ impl Universe {
         self.randomize_with(|| js_sys::Math::random() < 0.5);
     }
 
+    pub fn clear(&mut self) {
+        self.cells.clear();
+    }
+
     pub fn toggle_cell(&mut self, row: u32, col: u32) {
         if !self.contains(row, col) {
             log!("[{}, {}] is outside of the universe", row, col);
@@ -358,6 +362,22 @@ mod tests {
             universe.cells.as_slice(),
             FixedBitSet::from_iter([1, 3]).as_slice()
         );
+    }
+
+    #[test]
+    fn clear_makes_every_cell_dead_without_changing_the_universe_size() {
+        // Given:
+        let mut universe = empty_universe(2, 2);
+        universe.set_cells(&[(0, 0), (0, 1), (1, 0), (1, 1)]);
+
+        // When:
+        universe.clear();
+
+        // Then:
+        assert_eq!(universe.width, 2);
+        assert_eq!(universe.height, 2);
+        assert_eq!(universe.cells.len(), 4);
+        assert_eq!(universe.cells.count_ones(..), 0);
     }
 
     #[test]

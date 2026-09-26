@@ -18,6 +18,9 @@ const createHarness = () => {
   const playback = createPlayback({
     playPauseButton,
     universe: {
+      clear() {
+        calls.events.push("clear");
+      },
       randomize() {
         calls.events.push("randomize");
       },
@@ -126,6 +129,33 @@ describe("playback", () => {
 
     // Then:
     assert.deepEqual(calls.events, ["randomize", "redraw"]);
+    assert.deepEqual(calls.canceledFrames, []);
+    assert.equal(playback.isPaused(), false);
+  });
+
+  it("clears and redraws a paused universe without starting playback", () => {
+    // Given:
+    const { calls, playback } = createHarness();
+
+    // When:
+    playback.clear();
+
+    // Then:
+    assert.deepEqual(calls.events, ["clear", "redraw"]);
+    assert.equal(playback.isPaused(), true);
+  });
+
+  it("clears and redraws a playing universe without pausing it", () => {
+    // Given:
+    const { calls, playback } = createHarness();
+    playback.togglePlayPause();
+    calls.events.length = 0;
+
+    // When:
+    playback.clear();
+
+    // Then:
+    assert.deepEqual(calls.events, ["clear", "redraw"]);
     assert.deepEqual(calls.canceledFrames, []);
     assert.equal(playback.isPaused(), false);
   });
