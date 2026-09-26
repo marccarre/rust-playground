@@ -133,6 +133,8 @@ impl Universe {
             if self.contains(row, col) {
                 let idx = self.get_index(row, col);
                 self.cells.insert(idx);
+            } else {
+                log!("[{}, {}] is outside of the universe", row, col);
             }
         }
     }
