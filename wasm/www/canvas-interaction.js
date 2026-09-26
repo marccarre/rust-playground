@@ -48,6 +48,12 @@ const attachCanvasInteractionHandlers = ({
     redraw();
   };
 
+  const insertPulsar = (event, target) => {
+    event.preventDefault();
+    universe.insert_pulsar(target.row, target.column);
+    redraw();
+  };
+
   canvas.addEventListener("click", (event) => {
     const target = targetCell(event);
 
@@ -58,6 +64,12 @@ const attachCanvasInteractionHandlers = ({
         insertGlider(event, target);
       }
       previousContextMenuGesture = null;
+      return;
+    }
+
+    if (event.shiftKey) {
+      previousContextMenuGesture = null;
+      insertPulsar(event, target);
       return;
     }
 

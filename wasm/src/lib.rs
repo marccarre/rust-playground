@@ -110,6 +110,80 @@ impl Universe {
             self.cells.set(idx, true);
         }
     }
+
+    pub fn insert_pulsar(&mut self, row: u32, col: u32) {
+        const SIZE: usize = 13;
+        if !self.contains(row, col) || self.width < SIZE as u32 || self.height < SIZE as u32 {
+            return;
+        }
+
+        let rows: [u32; SIZE] =
+            std::array::from_fn(|index| (row + self.height + index as u32 - 6) % self.height);
+        let cols: [u32; SIZE] =
+            std::array::from_fn(|index| (col + self.width + index as u32 - 6) % self.width);
+
+        for pulsar_row in rows {
+            for pulsar_col in cols {
+                let idx = self.get_index(pulsar_row, pulsar_col);
+                self.cells.set(idx, false);
+            }
+        }
+
+        const LIVE_CELLS: [(usize, usize); 48] = [
+            (0, 2),
+            (0, 3),
+            (0, 4),
+            (0, 8),
+            (0, 9),
+            (0, 10),
+            (2, 0),
+            (2, 5),
+            (2, 7),
+            (2, 12),
+            (3, 0),
+            (3, 5),
+            (3, 7),
+            (3, 12),
+            (4, 0),
+            (4, 5),
+            (4, 7),
+            (4, 12),
+            (5, 2),
+            (5, 3),
+            (5, 4),
+            (5, 8),
+            (5, 9),
+            (5, 10),
+            (7, 2),
+            (7, 3),
+            (7, 4),
+            (7, 8),
+            (7, 9),
+            (7, 10),
+            (8, 0),
+            (8, 5),
+            (8, 7),
+            (8, 12),
+            (9, 0),
+            (9, 5),
+            (9, 7),
+            (9, 12),
+            (10, 0),
+            (10, 5),
+            (10, 7),
+            (10, 12),
+            (12, 2),
+            (12, 3),
+            (12, 4),
+            (12, 8),
+            (12, 9),
+            (12, 10),
+        ];
+        for (row_index, col_index) in LIVE_CELLS {
+            let idx = self.get_index(rows[row_index], cols[col_index]);
+            self.cells.set(idx, true);
+        }
+    }
 }
 
 impl Universe {
@@ -385,6 +459,149 @@ mod tests {
             let mut universe = empty_universe(5, 5);
             universe.set_cells(&[(0, 0)]);
             universe.insert_glider(row, col);
+            universe.cells
+        });
+
+        // Then:
+        for cells in states {
+            assert_eq!(cells.count_ones(..), 1);
+            assert!(cells[0]);
+        }
+    }
+
+    #[test]
+    fn insert_pulsar_centres_an_exact_pulsar_on_the_target_cell() {
+        // Given:
+        let mut universe = empty_universe(15, 15);
+        for row in 1..14 {
+            for col in 1..14 {
+                universe.set_cells(&[(row, col)]);
+            }
+        }
+
+        // When:
+        universe.insert_pulsar(7, 7);
+
+        // Then:
+        let expected = [
+            "..XXX...XXX..",
+            ".............",
+            "X....X.X....X",
+            "X....X.X....X",
+            "X....X.X....X",
+            "..XXX...XXX..",
+            ".............",
+            "..XXX...XXX..",
+            "X....X.X....X",
+            "X....X.X....X",
+            "X....X.X....X",
+            ".............",
+            "..XXX...XXX..",
+        ];
+        for (row_offset, expected_row) in expected.iter().enumerate() {
+            for (col_offset, expected_cell) in expected_row.bytes().enumerate() {
+                let idx = universe.get_index((row_offset + 1) as u32, (col_offset + 1) as u32);
+                assert_eq!(
+                    universe.cells[idx],
+                    expected_cell == b'X',
+                    "unexpected cell at pattern offset ({row_offset}, {col_offset})"
+                );
+            }
+        }
+        assert_eq!(universe.cells.count_ones(..), 48);
+    }
+
+    #[test]
+    fn insert_pulsar_wraps_around_the_universe_edges() {
+        // Given:
+        let mut universe = empty_universe(13, 13);
+
+        // When:
+        universe.insert_pulsar(0, 0);
+
+        // Then:
+        let expected_live_cells = [
+            (1, 2),
+            (1, 3),
+            (1, 4),
+            (1, 9),
+            (1, 10),
+            (1, 11),
+            (2, 1),
+            (2, 6),
+            (2, 7),
+            (2, 12),
+            (6, 2),
+            (6, 3),
+            (6, 4),
+            (6, 9),
+            (6, 10),
+            (6, 11),
+            (7, 2),
+            (7, 3),
+            (7, 4),
+            (7, 9),
+            (7, 10),
+            (7, 11),
+            (9, 1),
+            (9, 6),
+            (9, 7),
+            (9, 12),
+        ];
+        for (row, col) in expected_live_cells {
+            assert!(
+                universe.cells[universe.get_index(row, col)],
+                "cell ({row}, {col}) should be alive"
+            );
+        }
+        assert_eq!(universe.cells.count_ones(..), 48);
+    }
+
+    #[test]
+    fn insert_pulsar_preserves_cells_outside_its_thirteen_by_thirteen_footprint() {
+        // Given:
+        let mut universe = empty_universe(15, 15);
+        universe.set_cells(&[(0, 0), (14, 14)]);
+
+        // When:
+        universe.insert_pulsar(7, 7);
+
+        // Then:
+        assert!(universe.cells[0]);
+        assert!(universe.cells[224]);
+        assert_eq!(universe.cells.count_ones(..), 50);
+    }
+
+    #[test]
+    fn insert_pulsar_ignores_universes_smaller_than_thirteen_cells_in_either_dimension() {
+        // Given:
+        let dimensions = [(0, 13), (13, 0), (12, 13), (13, 12)];
+
+        // When:
+        let states = dimensions.map(|(width, height)| {
+            let mut universe = empty_universe(width, height);
+            universe.set_cells(&[(0, 0)]);
+            let expected = universe.cells.clone();
+            universe.insert_pulsar(0, 0);
+            (universe.cells, expected)
+        });
+
+        // Then:
+        for (cells, expected) in states {
+            assert_eq!(cells, expected);
+        }
+    }
+
+    #[test]
+    fn insert_pulsar_ignores_coordinates_outside_the_universe() {
+        // Given:
+        let invalid_coordinates = [(15, 0), (0, 15), (u32::MAX, 0), (0, u32::MAX)];
+
+        // When:
+        let states = invalid_coordinates.map(|(row, col)| {
+            let mut universe = empty_universe(15, 15);
+            universe.set_cells(&[(0, 0)]);
+            universe.insert_pulsar(row, col);
             universe.cells
         });
 

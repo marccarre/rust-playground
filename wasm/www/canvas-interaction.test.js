@@ -27,6 +27,7 @@ const createEvent = (overrides = {}) => {
     clientX: 23,
     clientY: 39,
     ctrlKey: true,
+    shiftKey: false,
     timeStamp: 100,
     preventDefault() {
       defaultPrevented = true;
@@ -40,10 +41,13 @@ const createEvent = (overrides = {}) => {
 
 const createHarness = () => {
   const canvas = createCanvas();
-  const calls = { gliders: [], toggles: [], redraws: 0 };
+  const calls = { gliders: [], pulsars: [], toggles: [], redraws: 0 };
   const universe = {
     insert_glider(row, column) {
       calls.gliders.push([row, column]);
+    },
+    insert_pulsar(row, column) {
+      calls.pulsars.push([row, column]);
     },
     toggle_cell(row, column) {
       calls.toggles.push([row, column]);
@@ -107,6 +111,22 @@ describe("canvas interactions", () => {
     assert.equal(event.defaultPrevented, false);
     assert.deepEqual(calls.gliders, []);
     assert.deepEqual(calls.toggles, [[3, 2]]);
+    assert.equal(calls.redraws, 1);
+  });
+
+  it("inserts one pulsar for a Shift-click event", () => {
+    // Given:
+    const { canvas, calls } = createHarness();
+    const event = createEvent({ ctrlKey: false, shiftKey: true });
+
+    // When:
+    canvas.dispatch("click", event);
+
+    // Then:
+    assert.equal(event.defaultPrevented, true);
+    assert.deepEqual(calls.pulsars, [[3, 2]]);
+    assert.deepEqual(calls.gliders, []);
+    assert.deepEqual(calls.toggles, []);
     assert.equal(calls.redraws, 1);
   });
 
