@@ -82,6 +82,18 @@ impl Universe {
 impl Universe {
     // Rust-facing methods:
 
+    /// Set the universe width and reset every cell to dead.
+    pub fn set_width(&mut self, width: u32) {
+        self.width = width;
+        self.reset_cells();
+    }
+
+    /// Set the universe height and reset every cell to dead.
+    pub fn set_height(&mut self, height: u32) {
+        self.height = height;
+        self.reset_cells();
+    }
+
     /// Get the state of every cell in the universe.
     pub fn get_cells(&self) -> &FixedBitSet {
         &self.cells
@@ -97,6 +109,10 @@ impl Universe {
 
     fn get_index(&self, row: u32, column: u32) -> usize {
         (row * self.width + column) as usize
+    }
+
+    fn reset_cells(&mut self) {
+        self.cells = FixedBitSet::with_capacity((self.width * self.height) as usize);
     }
 
     fn live_neighbour_count(&self, row: u32, column: u32) -> u8 {

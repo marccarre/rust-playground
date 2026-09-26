@@ -9,6 +9,16 @@ setup:
 build:
     npm run build
 
+test:
+    cargo test
+    set -eu; for runner in firefox chrome node; do \
+        if [ "${runner}" = node ]; then \
+            wasm-pack test "--${runner}"; \
+        else \
+            wasm-pack test "--${runner}" --headless; \
+        fi; \
+    done
+
 run:
     npm run serve
 
