@@ -40,7 +40,7 @@ const createHarness = () => {
   attachPlayPauseInteractionHandlers({
     button,
     keyboardTarget,
-    toggle: () => {
+    togglePlayPause: () => {
       toggles += 1;
     },
   });

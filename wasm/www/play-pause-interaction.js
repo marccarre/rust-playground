@@ -1,9 +1,9 @@
 const attachPlayPauseInteractionHandlers = ({
   button,
   keyboardTarget,
-  toggle,
+  togglePlayPause,
 }) => {
-  button.addEventListener("click", toggle);
+  button.addEventListener("click", togglePlayPause);
 
   keyboardTarget.addEventListener("keydown", (event) => {
     if (event.key !== " ") {
@@ -12,7 +12,7 @@ const attachPlayPauseInteractionHandlers = ({
 
     event.preventDefault();
     if (!event.repeat) {
-      toggle();
+      togglePlayPause();
     }
   });
 };
