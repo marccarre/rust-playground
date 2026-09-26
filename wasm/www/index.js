@@ -102,7 +102,7 @@ const togglePlayPause = () => {
 
 attachPlayPauseInteractionHandlers({
   button: playPauseButton,
-  keyboardTarget: document,
+  keyboardTarget: window,
   togglePlayPause,
 });
 

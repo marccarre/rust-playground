@@ -8,12 +8,7 @@ const INTERACTIVE_ELEMENT_SELECTOR = [
   "textarea",
   "video[controls]",
   '[contenteditable]:not([contenteditable="false"])',
-  '[role="button"]',
-  '[role="checkbox"]',
-  '[role="radio"]',
-  '[role="slider"]',
-  '[role="switch"]',
-  '[role="textbox"]',
+  "[role]",
 ].join(", ");
 
 const isInteractiveTarget = (target) =>

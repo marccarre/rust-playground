@@ -137,6 +137,12 @@ describe("play/pause interactions", () => {
       ["checkbox", "input"],
       ["other button", "button"],
       ["editable content", "[contenteditable]"],
+      ["ARIA tab", "[role]"],
+      ["ARIA menu item", "[role]"],
+      ["ARIA menu checkbox", "[role]"],
+      ["ARIA menu radio", "[role]"],
+      ["ARIA option", "[role]"],
+      ["ARIA tree item", "[role]"],
     ];
     const events = scenarios.map(([, selector]) =>
       createKeyboardEvent({ target: createKeyboardTarget(selector) }),
