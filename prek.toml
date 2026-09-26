@@ -165,7 +165,7 @@ hooks = [
   {
     id = "cargo-nextest",
     name = "cargo nextest",
-    entry = "cargo nextest run --workspace",
+    entry = "cargo nextest run --workspace --no-tests warn",
     language = "system",
     types = ["rust"],
     pass_filenames = false,

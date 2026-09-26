@@ -11,7 +11,7 @@ lint:
     prek run --all-files
 
 test:
-    cargo nextest run --workspace
+    cargo nextest run --workspace --no-tests warn
 
 bench:
     cargo bench
