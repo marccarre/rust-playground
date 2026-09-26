@@ -5,6 +5,7 @@ const { createPlayback } = require("./playback");
 
 const createHarness = () => {
   const attributes = new Map();
+  const tickCounter = { textContent: "" };
   const playPauseButton = {
     textContent: "",
     getAttribute(name) {
@@ -17,6 +18,7 @@ const createHarness = () => {
   const calls = { canceledFrames: [], events: [], requestedFrames: [] };
   const playback = createPlayback({
     playPauseButton,
+    tickCounter,
     universe: {
       clear() {
         calls.events.push("clear");
@@ -40,10 +42,34 @@ const createHarness = () => {
     },
   });
 
-  return { calls, playback, playPauseButton };
+  return { calls, playback, playPauseButton, tickCounter };
 };
 
 describe("playback", () => {
+  it("counts ticks in the current game", () => {
+    // Given:
+    const { calls, playback, tickCounter } = createHarness();
+    const initialCount = tickCounter.textContent;
+
+    // When:
+    playback.step();
+    const steppedCount = tickCounter.textContent;
+    playback.reset();
+    const resetCount = tickCounter.textContent;
+    playback.togglePlayPause();
+    calls.requestedFrames[0]();
+    const playingCount = tickCounter.textContent;
+    playback.clear();
+    const clearedCount = tickCounter.textContent;
+
+    // Then:
+    assert.equal(initialCount, "0");
+    assert.equal(steppedCount, "1");
+    assert.equal(resetCount, "0");
+    assert.equal(playingCount, "2");
+    assert.equal(clearedCount, "0");
+  });
+
   it("exposes each playback state through the button label", () => {
     // Given:
     const { playback, playPauseButton } = createHarness();

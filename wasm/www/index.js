@@ -83,9 +83,11 @@ const playPauseButton = document.getElementById("btn-play-pause");
 const clearButton = document.getElementById("btn-clear");
 const resetButton = document.getElementById("btn-reset");
 const stepButton = document.getElementById("btn-step");
+const tickCounter = document.getElementById("tick-count");
 
 const playback = createPlayback({
   playPauseButton,
+  tickCounter,
   universe,
   redraw,
   requestFrame: requestAnimationFrame,

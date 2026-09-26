@@ -18,6 +18,11 @@
             display: flex;
             gap: 0.25rem;
         }
+
+        #game-stats {
+            display: flex;
+            gap: 1rem;
+        }
     </style>
 </head>
 
@@ -29,6 +34,9 @@
         <button id="btn-clear" type="button" aria-label="New empty universe">🧽</button>
     </div>
     <canvas id="canvas-game-of-life"></canvas>
+    <div id="game-stats">
+        <span>Ticks: <output id="tick-count">0</output></span>
+    </div>
     <!-- No need for any <script> tag as HtmlWebpackPlugin injects index.js already. -->
 </body>
 

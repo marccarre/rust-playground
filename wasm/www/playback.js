@@ -1,11 +1,13 @@
 const createPlayback = ({
   playPauseButton,
+  tickCounter,
   universe,
   redraw,
   requestFrame,
   cancelFrame,
 }) => {
   let animationId = null;
+  let tickCount = 0;
 
   const isPaused = () => animationId === null;
 
@@ -14,8 +16,14 @@ const createPlayback = ({
     playPauseButton.setAttribute("aria-label", label);
   };
 
+  const updateTickCounter = () => {
+    tickCounter.textContent = String(tickCount);
+  };
+
   const tickAndRedraw = () => {
     universe.tick();
+    tickCount += 1;
+    updateTickCounter();
     redraw();
   };
 
@@ -52,15 +60,20 @@ const createPlayback = ({
 
   const reset = () => {
     universe.randomize();
+    tickCount = 0;
+    updateTickCounter();
     redraw();
   };
 
   const clear = () => {
     universe.clear();
+    tickCount = 0;
+    updateTickCounter();
     redraw();
   };
 
   setButtonState("▶", "Play");
+  updateTickCounter();
   return { clear, isPaused, reset, step, togglePlayPause };
 };
 
