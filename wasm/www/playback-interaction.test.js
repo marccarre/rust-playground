@@ -123,6 +123,59 @@ describe("play/pause interactions", () => {
     assert.equal(steps(), 1);
   });
 
+  it("steps one generation when ArrowRight is pressed", () => {
+    // Given:
+    const { keyboardTarget, steps } = createHarness();
+    const event = createKeyboardEvent({ key: "ArrowRight" });
+
+    // When:
+    keyboardTarget.dispatch("keydown", event);
+
+    // Then:
+    assert.equal(event.defaultPrevented, true);
+    assert.equal(steps(), 1);
+  });
+
+  it("leaves ArrowRight available to interactive controls", () => {
+    // Given:
+    const { keyboardTarget, steps } = createHarness();
+    const event = createKeyboardEvent({
+      key: "ArrowRight",
+      target: createKeyboardTarget("button"),
+    });
+
+    // When:
+    keyboardTarget.dispatch("keydown", event);
+
+    // Then:
+    assert.equal(event.defaultPrevented, false);
+    assert.equal(steps(), 0);
+  });
+
+  it("ignores repeated or modified ArrowRight events", () => {
+    // Given:
+    const { keyboardTarget, steps } = createHarness();
+    const events = [
+      createKeyboardEvent({ key: "ArrowRight", repeat: true }),
+      createKeyboardEvent({ key: "ArrowRight", altKey: true }),
+      createKeyboardEvent({ key: "ArrowRight", ctrlKey: true }),
+      createKeyboardEvent({ key: "ArrowRight", metaKey: true }),
+      createKeyboardEvent({ key: "ArrowRight", shiftKey: true }),
+      createKeyboardEvent({ key: "ArrowRight", isComposing: true }),
+    ];
+
+    // When:
+    for (const event of events) {
+      keyboardTarget.dispatch("keydown", event);
+    }
+
+    // Then:
+    for (const event of events) {
+      assert.equal(event.defaultPrevented, false);
+    }
+    assert.equal(steps(), 0);
+  });
+
   it("resets the universe when the reset button is clicked", () => {
     // Given:
     const { resetButton, resets } = createHarness();

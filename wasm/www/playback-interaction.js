@@ -55,6 +55,17 @@ const isGlobalSpaceShortcut = (event) =>
   !event.shiftKey &&
   !isInteractiveTarget(event.target);
 
+const isGlobalArrowRightShortcut = (event) =>
+  event.key === "ArrowRight" &&
+  !event.defaultPrevented &&
+  !event.repeat &&
+  !event.isComposing &&
+  !event.altKey &&
+  !event.ctrlKey &&
+  !event.metaKey &&
+  !event.shiftKey &&
+  !isInteractiveTarget(event.target);
+
 const attachPlaybackInteractionHandlers = ({
   button,
   clearButton,
@@ -72,6 +83,12 @@ const attachPlaybackInteractionHandlers = ({
   stepButton.addEventListener("click", step);
 
   keyboardTarget.addEventListener("keydown", (event) => {
+    if (isGlobalArrowRightShortcut(event)) {
+      event.preventDefault();
+      step();
+      return;
+    }
+
     if (!isGlobalSpaceShortcut(event)) {
       return;
     }
