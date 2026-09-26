@@ -1,16 +1,17 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const webpack = require("webpack");
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 
 module.exports = {
-  entry: "./index.js",
+  entry: "./www/index.js",
   output: {
-    path: path.resolve(__dirname, "..", "dist", "hello_world"),
+    path: path.resolve(__dirname, "..", "dist", "game-of-life"),
     filename: "index.js",
   },
   plugins: [
-    new HtmlWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      template: "./www/index.html",
+    }),
     new WasmPackPlugin({
       crateDirectory: __dirname,
     }),

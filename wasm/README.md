@@ -5,12 +5,8 @@ WASM/Rust playground.
 ## How to?
 
 ```console
+just setup
 just build
-```
-
-then:
-
-```console
 just run
 ```
 

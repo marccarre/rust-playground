@@ -1,11 +1,16 @@
-build:
-    wasm-pack build
-
-run:
+setup:
     npm install --save-dev \
         @wasm-tool/wasm-pack-plugin@latest \
         html-webpack-plugin@latest \
         webpack@latest \
         webpack-cli@latest \
         webpack-dev-server@latest
+
+build:
+    npm run build
+
+run:
     npm run serve
+
+clean:
+    rm -fr node_modules/ pkg/
