@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "webpack",
-    "serve": "webpack serve"
+    "serve": "webpack serve",
+    "test:js": "node --test www/*.test.js"
   }
 }

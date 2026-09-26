@@ -1,4 +1,5 @@
 import { Universe, __wasm as wasm } from "../pkg";
+const { getCellCoordinate } = require("./cell-coordinate");
 
 const CELL_SIZE = 5; // px
 const GRID_COLOR = "#CCCCCC";
@@ -100,8 +101,8 @@ canvas.addEventListener("click", (event) => {
   const scaleY = canvas.height / boundingRect.height;
   const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
   const canvasTop = (event.clientY - boundingRect.top) * scaleY;
-  const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), height - 1);
-  const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), width - 1);
+  const row = getCellCoordinate(canvasTop, height, CELL_SIZE);
+  const col = getCellCoordinate(canvasLeft, width, CELL_SIZE);
   universe.toggle_cell(row, col);
   drawGrid();
   drawCells();
