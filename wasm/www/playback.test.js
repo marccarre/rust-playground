@@ -6,6 +6,9 @@ const { createPlayback } = require("./playback");
 const createHarness = () => {
   const attributes = new Map();
   const fpsCounter = { textContent: "" };
+  const fpsMinCounter = { textContent: "" };
+  const fpsMaxCounter = { textContent: "" };
+  const fpsMedianCounter = { textContent: "" };
   const tickCounter = { textContent: "" };
   let currentTime = 0;
   const playPauseButton = {
@@ -21,6 +24,9 @@ const createHarness = () => {
   const playback = createPlayback({
     playPauseButton,
     fpsCounter,
+    fpsMinCounter,
+    fpsMaxCounter,
+    fpsMedianCounter,
     tickCounter,
     universe: {
       clear() {
@@ -49,6 +55,9 @@ const createHarness = () => {
   return {
     calls,
     fpsCounter,
+    fpsMinCounter,
+    fpsMaxCounter,
+    fpsMedianCounter,
     playback,
     playPauseButton,
     setTime: (time) => {
@@ -66,6 +75,73 @@ const runScheduledFrames = (calls, setTime, timestamps) => {
 };
 
 describe("playback", () => {
+  it("tracks min, max, and median over recent frame rates", () => {
+    // Given:
+    const {
+      calls,
+      fpsMinCounter,
+      fpsMaxCounter,
+      fpsMedianCounter,
+      playback,
+      setTime,
+    } = createHarness();
+
+    // When:
+    playback.togglePlayPause();
+    runScheduledFrames(calls, setTime, [1000, 1250, 1750, 2000]);
+
+    // Then:
+    assert.equal(fpsMinCounter.textContent, "1");
+    assert.equal(fpsMaxCounter.textContent, "4");
+    assert.equal(fpsMedianCounter.textContent, "3");
+  });
+
+  it("uses the middle sample as the median for an odd sample count", () => {
+    // Given:
+    const {
+      calls,
+      fpsMinCounter,
+      fpsMaxCounter,
+      fpsMedianCounter,
+      playback,
+      setTime,
+    } = createHarness();
+
+    // When:
+    playback.togglePlayPause();
+    runScheduledFrames(calls, setTime, [1000, 1250, 1750]);
+
+    // Then:
+    assert.equal(fpsMinCounter.textContent, "1");
+    assert.equal(fpsMaxCounter.textContent, "4");
+    assert.equal(fpsMedianCounter.textContent, "2");
+  });
+
+  it("keeps statistics for only the latest 100 frame intervals", () => {
+    // Given:
+    const {
+      calls,
+      fpsMinCounter,
+      fpsMaxCounter,
+      fpsMedianCounter,
+      playback,
+      setTime,
+    } = createHarness();
+    playback.togglePlayPause();
+    const timestamps = [1000];
+    for (let frame = 1; frame <= 100; frame += 1) {
+      timestamps.push(1000 + frame * 100);
+    }
+
+    // When:
+    runScheduledFrames(calls, setTime, timestamps);
+
+    // Then:
+    assert.equal(fpsMinCounter.textContent, "10");
+    assert.equal(fpsMaxCounter.textContent, "10");
+    assert.equal(fpsMedianCounter.textContent, "10");
+  });
+
   it("reports animation frames per second and returns to zero when paused", () => {
     // Given:
     const { calls, fpsCounter, playback, setTime } = createHarness();
@@ -85,7 +161,15 @@ describe("playback", () => {
 
   it("resets the frame rate for each new game", () => {
     // Given:
-    const { calls, fpsCounter, playback, setTime } = createHarness();
+    const {
+      calls,
+      fpsCounter,
+      fpsMinCounter,
+      fpsMaxCounter,
+      fpsMedianCounter,
+      playback,
+      setTime,
+    } = createHarness();
     playback.togglePlayPause();
     runScheduledFrames(calls, setTime, [250, 500, 750, 1000]);
     assert.equal(fpsCounter.textContent, "4");
@@ -99,6 +183,9 @@ describe("playback", () => {
     // Then:
     assert.equal(resetFps, "0");
     assert.equal(fpsCounter.textContent, "0");
+    assert.equal(fpsMinCounter.textContent, "0");
+    assert.equal(fpsMaxCounter.textContent, "0");
+    assert.equal(fpsMedianCounter.textContent, "0");
   });
 
   it("counts ticks in the current game", () => {

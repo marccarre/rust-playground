@@ -2,6 +2,9 @@ const createPlayback = ({
   playPauseButton,
   tickCounter,
   fpsCounter,
+  fpsMinCounter,
+  fpsMaxCounter,
+  fpsMedianCounter,
   universe,
   redraw,
   requestFrame,
@@ -12,6 +15,8 @@ const createPlayback = ({
   let tickCount = 0;
   let fpsWindowStart = 0;
   let fpsFrameCount = 0;
+  let lastFrameTimestamp = 0;
+  let fpsSamples = [];
 
   const isPaused = () => animationId === null;
 
@@ -24,13 +29,50 @@ const createPlayback = ({
     tickCounter.textContent = String(tickCount);
   };
 
-  const resetFpsMeasurement = () => {
+  const updateFpsStatistics = () => {
+    const sortedSamples = [...fpsSamples].sort((left, right) => left - right);
+    if (sortedSamples.length === 0) {
+      fpsMinCounter.textContent = "0";
+      fpsMaxCounter.textContent = "0";
+      fpsMedianCounter.textContent = "0";
+      return;
+    }
+
+    const middle = Math.floor(sortedSamples.length / 2);
+    const median =
+      sortedSamples.length % 2 === 0
+        ? (sortedSamples[middle - 1] + sortedSamples[middle]) / 2
+        : sortedSamples[middle];
+
+    fpsMinCounter.textContent = String(Math.round(sortedSamples[0]));
+    fpsMaxCounter.textContent = String(
+      Math.round(sortedSamples[sortedSamples.length - 1]),
+    );
+    fpsMedianCounter.textContent = String(Math.round(median));
+  };
+
+  const resetFpsMeasurement = ({ clearSamples = false } = {}) => {
     fpsWindowStart = now();
+    lastFrameTimestamp = fpsWindowStart;
     fpsFrameCount = 0;
     fpsCounter.textContent = "0";
+    if (clearSamples) {
+      fpsSamples = [];
+      updateFpsStatistics();
+    }
   };
 
   const updateFps = (timestamp) => {
+    const frameDuration = timestamp - lastFrameTimestamp;
+    if (frameDuration > 0) {
+      fpsSamples.push(1000 / frameDuration);
+      if (fpsSamples.length > 100) {
+        fpsSamples.shift();
+      }
+      updateFpsStatistics();
+    }
+    lastFrameTimestamp = timestamp;
+
     fpsFrameCount += 1;
     const elapsed = timestamp - fpsWindowStart;
     if (elapsed >= 1000) {
@@ -87,9 +129,7 @@ const createPlayback = ({
     universe.randomize();
     tickCount = 0;
     updateTickCounter();
-    if (!isPaused()) {
-      resetFpsMeasurement();
-    }
+    resetFpsMeasurement({ clearSamples: true });
     redraw();
   };
 
@@ -97,15 +137,13 @@ const createPlayback = ({
     universe.clear();
     tickCount = 0;
     updateTickCounter();
-    if (!isPaused()) {
-      resetFpsMeasurement();
-    }
+    resetFpsMeasurement({ clearSamples: true });
     redraw();
   };
 
   setButtonState("▶️", "Play");
   updateTickCounter();
-  fpsCounter.textContent = "0";
+  resetFpsMeasurement({ clearSamples: true });
   return { clear, isPaused, reset, step, togglePlayPause };
 };
 

@@ -85,11 +85,17 @@ const resetButton = document.getElementById("btn-reset");
 const stepButton = document.getElementById("btn-step");
 const tickCounter = document.getElementById("tick-count");
 const fpsCounter = document.getElementById("fps-count");
+const fpsMinCounter = document.getElementById("fps-min");
+const fpsMaxCounter = document.getElementById("fps-max");
+const fpsMedianCounter = document.getElementById("fps-median");
 
 const playback = createPlayback({
   playPauseButton,
   tickCounter,
   fpsCounter,
+  fpsMinCounter,
+  fpsMaxCounter,
+  fpsMedianCounter,
   universe,
   redraw,
   requestFrame: requestAnimationFrame,
