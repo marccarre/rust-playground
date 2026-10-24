@@ -32,8 +32,7 @@
 - If the problem space is described in a GitHub issues, feel free to link to it
   directly.
 - If you link to a Slack discussion, please also copy the relevant parts of the
-  discussion. (This is because Slack is currently configured to persist history
-  for 1 year, but after that, all context would be permanently lost.)
+  discussion to ensure this context is not eventually lost.
 -->
 
 ## Solution Space
